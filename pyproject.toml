@@ -1,0 +1,70 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "podsum"
+version = "0.1.0"
+description = "Turn long YouTube videos into timestamped chapter summaries, using a local LLM."
+readme = "README.md"
+requires-python = ">=3.11,<3.15"
+license = { file = "LICENSE" }
+authors = [{ name = "nityasuon", email = "suonnitya7@gmail.com" }]
+keywords = ["youtube", "summarization", "llm", "ollama", "podcast"]
+
+dependencies = [
+    "youtube-transcript-api>=1.2,<2.0",
+    "httpx>=0.27",
+    "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.6",
+    "mypy>=1.11",
+    "types-PyYAML",
+]
+# Stage 5: local transcription for videos with no captions.
+# Installed separately because it pulls in a multi-gigabyte ML stack.
+audio = [
+    "yt-dlp>=2024.8.6",
+    "faster-whisper>=1.0",
+]
+
+[project.scripts]
+podsum = "podsum.cli:main"
+
+[project.urls]
+Repository = "https://github.com/nityasuon/Text-Summarizer-Project"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+podsum = ["prompts/*.md", "py.typed"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RET", "PTH"]
+
+[tool.mypy]
+python_version = "3.11"
+packages = ["podsum"]
+strict = true
+warn_unreachable = true
+
+[[tool.mypy.overrides]]
+module = "youtube_transcript_api.*"
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

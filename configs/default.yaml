@@ -1,0 +1,43 @@
+# Every tunable lives here so experiments are a config edit, not a code edit.
+# Override any single value from the CLI, e.g. --set llm.model=gemma3:12b
+
+transcript:
+  # Descending priority. The first available language wins.
+  languages: ["en", "en-US", "en-GB"]
+  # Human-written captions are cleaner than auto-generated ones (punctuation,
+  # speaker changes), so prefer them when a video has both.
+  prefer_manual: true
+
+chunking:
+  # How much transcript goes into one map call. Bigger chunks mean fewer calls
+  # and more context, but more chance the model skims the middle.
+  target_tokens: 1200
+  # Repeated text at chunk boundaries, so an idea split across a boundary
+  # still appears whole in at least one chunk.
+  overlap_tokens: 120
+  # Safety valve: never emit a chunk larger than this, whatever the target.
+  hard_max_tokens: 2000
+
+llm:
+  provider: ollama
+  model: "qwen3:8b"
+  base_url: "http://localhost:11434"
+  # Low temperature: we want faithful compression, not creative writing.
+  temperature: 0.2
+  # Context window. Must comfortably exceed chunking.hard_max_tokens plus the
+  # prompt. Raising this costs RAM through the KV cache.
+  num_ctx: 8192
+  timeout_s: 300
+  max_retries: 2
+  # How many chunks to summarize at once. Above ~2 on an 18GB machine you are
+  # fighting yourself for memory rather than going faster.
+  concurrency: 2
+
+cache:
+  enabled: true
+  path: "data/cache.sqlite3"
+
+output:
+  include_key_points: true
+  # Chapters beyond this are merged into the last one, to keep output skimmable.
+  max_chapters: 24
